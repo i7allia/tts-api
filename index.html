@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TTS Генератор</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 40px auto; padding: 20px; }
+        textarea { width: 100%; height: 100px; margin: 10px 0; padding: 10px; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        select, input { margin: 5px 0; padding: 5px; width: 100%; }
+        audio { width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>🎵 Генератор речи (TTS API)</h2>
+    
+    <textarea id="text" placeholder="Введите текст для озвучки...">Привет! Это тестовая озвучка текста.</textarea>
+    
+    <div>
+        <label>Голос:</label>
+        <select id="voice">
+            <option value="ru-RU-SvetlanaNeural">Светлана (женский, RU)</option>
+            <option value="ru-RU-DmitryNeural">Дмитрий (мужской, RU)</option>
+            <option value="en-US-JennyNeural">Jenny (женский, EN)</option>
+            <option value="en-US-GuyNeural">Guy (мужской, EN)</option>
+        </select>
+    </div>
+    
+    <div>
+        <label>URL вашего API:</label>
+        <input type="text" id="apiUrl" value="https://ВАШ-ПРОЕКТ.up.railway.app">
+        <small>Измените на ваш Railway URL</small>
+    </div>
+    
+    <button onclick="generateSpeech()">🎤 Озвучить текст</button>
+    
+    <audio id="audioPlayer" controls></audio>
+    
+    <script>
+        async function generateSpeech() {
+            const text = document.getElementById('text').value;
+            const voice = document.getElementById('voice').value;
+            const apiUrl = document.getElementById('apiUrl').value;
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Генерация...';
+            
+            try {
+                // Формируем URL запроса
+                const url = `${apiUrl}/tts?text=${encodeURIComponent(text)}&voice=${voice}`;
+                
+                // Получаем аудио
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Ошибка API');
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById('audioPlayer').src = audioUrl;
+                
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🎤 Озвучить текст';
+            }
+        }
+        
+        // Автозаполнение Railway URL
+        document.getElementById('apiUrl').value = window.location.hostname.includes('railway') 
+            ? window.location.origin 
+            : 'https://ВАШ-ПРОЕКТ.up.railway.app';
+    </script>
+</body>
+</html>
